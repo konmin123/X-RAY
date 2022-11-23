@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>X-RAY HH</title>
+  <link type="text/css" href="{{ url_for('static', filename='css/style.css')}}" rel="stylesheet">
+  <link rel="icon" type="image" href="{{ url_for('static', filename='image/mini_image.jpg')}}">
+</head>
+<body>
+  <div class="header">
+    <p class="logo">X-RAY HH</p>
+  </div>
+  <form class="search_form" action="/" method="post">
+  <p><label>Слово для поиска: </label><input type="text" name="search_word" value="" required/>
+  <p><input type="submit" value="Запуск"></p>
+  </form>
+  <div class="content_title">
+      <h3>Ключевое слово</h3>
+      <h3>Уровень опыта соискателя</h3>
+      <h3>Количество вакансий</h3>
+      <h3>Средняя зарплата</h3>
+      <h3>Удалённых вакансий</h3>
+
+  </div>
+  <div class="content">
+      {% for d in data %}
+        <h3>{{ d[1] }}</h3>
+        <h3>{{ d[2] }}</h3>
+        <h3>{{ d[3] }}</h3>
+        <h3>{{ d[4]}}</h3>
+        <h3>{{ d[6] }}</h3>
+      {% endfor %}
+  </div>
+
+  <p class="footer">© 2022 Миндлин К.С.</p>
+
+</body>
+</html>
