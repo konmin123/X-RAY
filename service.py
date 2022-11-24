@@ -103,13 +103,16 @@ class Analizer:
         for item in RequestHH.data.values():
             for object_ in item:
                 count += 1
-                for vac in object_[0]['items']:
-                    cls.squeezer(vac)
-                if count == 20:
-                    cls.data['language_db'].append(object_[1]['search_word'])
-                    cls.data['experience_db'].append(object_[1]['experience_level'])
-                    cls.data_transfer()
-                    count = 0
+                try:
+                    for vac in object_[0]['items']:
+                        cls.squeezer(vac)
+                    if count == 20:
+                        cls.data['language_db'].append(object_[1]['search_word'])
+                        cls.data['experience_db'].append(object_[1]['experience_level'])
+                        cls.data_transfer()
+                        count = 0
+                except KeyError:  # ???
+                    continue
 
     @classmethod
     def data_transfer(cls):
