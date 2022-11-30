@@ -24,11 +24,11 @@
   </div>
   <div class="content">
       {% for d in data %}
-        <h3>{{ d[1] }}</h3>
-        <h3>{{ d[2] }}</h3>
-        <h3>{{ d[3] }}</h3>
-        <h3>{{ d[4]}}</h3>
-        <h3>{{ d[6] }}</h3>
+        <h3>{{ d.search_word }}</h3>
+        <h3>{{ d.experience }}</h3>
+        <h3>{{ d.quantity_vac }}</h3>
+        <h3>{{ d.avarage_salary}}</h3>
+        <h3>{{ d.remote_vac }}</h3>
       {% endfor %}
   </div>
 
