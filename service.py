@@ -1,17 +1,44 @@
 import datetime
 import json
 import threading
+from typing import Union
 
 import pandas
 import requests
 
 
 class RequestHH:
-    data = {"noExperience": [], "between1And3": [], "between3And6": [], "moreThan6": []}
+    """
+    Класс получающий данные через "https://api.hh.ru/vacancies".\n
+    Класс имеет следующие атрибуты:\n
+    data - словарь в который в процессе загрузки данных добавляются списки
+    содержащие параметры запроса и json объект с полученными данными.\n
+    __search_word - список содержащий строку для дальнейшего запроса данных
+    через "https://api.hh.ru/vacancies".\n
+    __exp - список кортежей хранящий уровни опыта, необходим для дальнейшего
+    запроса данных через "https://api.hh.ru/vacancies".\n
+    Класс имеет следующие методы:\n
+    get_page() - метод непосредственно осуществляющий запрос на
+    "https://api.hh.ru/vacancies". Принимает: слово для поиска,
+    уровень опыта требуемый в вакансии, номер страницы данных.
+    Добавляет список из json объекта и параметров запроса в RequestHH.data.\n
+    threading_request() - метод осуществляющий множественные вызовы метода
+    get_page в многопоточном режиме для увеличения скорости работы программы.\n
+    set_search_words() - метод 'сеттер' для установки значения в атрибут
+    RequestHH.__search_word.\n
+    clear_data() - метод для отчистки данных в атрибуте RequestHH.data.
+    """
 
-    __search_word = [""]
+    data: dict[str, list] = {
+        "noExperience": [],
+        "between1And3": [],
+        "between3And6": [],
+        "moreThan6": []
+    }
 
-    __exp = [
+    __search_word: list[str] = [""]
+
+    __exp: list[tuple[str]] = [
         ("без опыта", "noExperience"),
         ("с опытом от года до трёх лет", "between1And3"),
         ("с опытом от трёх до шести лет", "between3And6"),
@@ -19,13 +46,14 @@ class RequestHH:
     ]
 
     @classmethod
-    def get_page(
-        cls,
-        word: str,
-        exp: tuple,
-        page=0,
-    ):
-        params = {
+    def get_page(cls, word: str, exp: tuple, page: int = 0) -> None:
+        """
+        Метод непосредственно осуществляющий запрос на
+        "https://api.hh.ru/vacancies". Принимает: слово для поиска,
+        уровень опыта требуемый в вакансии, номер страницы данных.
+        Добавляет список из json объекта и параметров запроса в RequestHH.data.
+        """
+        params: dict[str, Union[str, int]] = {
             "text": "Name:" + word,
             "area": 113,
             "page": page,
@@ -42,7 +70,12 @@ class RequestHH:
         cls.data[exp[1]].append([obj, params])
 
     @classmethod
-    def threading_request(cls):
+    def threading_request(cls) -> None:
+        """
+        Метод осуществляющий множественные вызовы метода
+        get_page в многопоточном режиме для увеличения скорости работы
+        программы.
+        """
         threading_count = len(threading.enumerate())
         RequestHH.clear_data()
         for exp in cls.__exp:
@@ -56,13 +89,20 @@ class RequestHH:
                     break
 
     @classmethod
-    def set_search_words(cls, word):
-        cls.__search_word = []
+    def set_search_words(cls, word: str) -> None:
+        """
+        Метод 'сеттер' для установки значения в атрибут
+        RequestHH.__search_word.
+        """
+        cls.__search_word: list = []
         cls.__search_word.append(word)
 
     @classmethod
-    def clear_data(cls):
-        cls.data = {
+    def clear_data(cls) -> None:
+        """
+        Метод для отчистки данных в атрибуте RequestHH.data.
+        """
+        cls.data: dict[str, list] = {
             "noExperience": [],
             "between1And3": [],
             "between3And6": [],
@@ -71,19 +111,25 @@ class RequestHH:
 
 
 class CurrencyConverter:
-    """Класс отвечающий за получение актуального курса валюты. \n
-    Имеет приватный атрибут:_________________\n
-    __data - содержит json объект полученный в результате запроса на url 'https://www.cbr-xml-daily.ru/daily_json.js'\n
-    Имеет публичный метод:___________________\n
-    exchange_rate - метод принимает строку(str, абривиатуру валюты в формате: 'USD', 'EUR'), возвращает мультипликатор
-    для перевода валюты в рубли (float)"""
+    """
+    Класс отвечающий за получение актуального курса валюты. \n
+    Имеет атрибут:\n
+    __data - содержит json объект полученный в результате запроса на url
+    'https://www.cbr-xml-daily.ru/daily_json.js'.\n
+    Имеет метод:\n
+    exchange_rate() - метод принимает строку(str, абривиатуру валюты в формате:
+    'USD', 'EUR'), возвращает мультипликатор для перевода валюты в рубли.
+    """
 
     __data = requests.get("https://www.cbr-xml-daily.ru/daily_json.js").json()
 
     @classmethod
     def exchange_rate(cls, currency: str) -> float:
-        """Метод принимает строку (абривиатуру валюты в формате: 'USD', 'EUR'), возвращает мультипликатор
-        для перевода валюты в рубли (float)"""
+        """
+        Метод принимает строку (абривиатуру валюты в формате: 'USD', 'EUR'),
+        возвращает мультипликатор
+        для перевода валюты в рубли.
+        """
         if currency == "RUR":
             return 1
         data = CurrencyConverter.__data
@@ -120,11 +166,13 @@ class Analizer:
                     for vac in object_[0]["items"]:
                         cls.squeezer(vac)
                     if count == 20:
-                        cls.data["language_db"].append(object_[1]["search_word"])
-                        cls.data["experience_db"].append(object_[1]["experience_level"])
+                        cls.data["language_db"].append(object_[1]
+                                                       ["search_word"])
+                        cls.data["experience_db"].append(object_[1]
+                                                         ["experience_level"])
                         cls.data_transfer()
                         count = 0
-                except KeyError:  # ???
+                except KeyError:
                     continue
 
     @classmethod
